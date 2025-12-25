@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tiến Lên Miền Nam - AI Fixed</title>
+    <title>Tiến Lên Miền Nam - Ultimate Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Quicksand:wght@700&display=swap" rel="stylesheet">
@@ -32,28 +32,21 @@
 <body class="flex items-center justify-center h-screen w-screen text-white select-none">
 
 <div id="ui-lobby" class="fixed inset-0 lobby-screen flex flex-col items-center justify-center p-6 text-center">
-    <h1 class="text-6xl font-black text-yellow-500 italic mb-2 tracking-tighter" style="font-family: 'Montserrat'">TIẾN LÊN</h1>
-    <p class="text-slate-500 text-[10px] tracking-[0.4em] mb-10 uppercase">AI & Hint Edition</p>
-    
+    <h1 class="text-6xl font-black text-yellow-500 italic mb-2" style="font-family: 'Montserrat'">TIẾN LÊN</h1>
     <div id="lobby-home" class="w-full max-w-sm space-y-4">
-        <button onclick="actions.startSolo()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-xl shadow-lg border-b-4 border-emerald-900 active:border-b-0 active:translate-y-1 transition-all uppercase">Chơi với Bot AI</button>
+        <button onclick="actions.startSolo()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-xl uppercase">Chơi với Bot AI</button>
         <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
-            <p class="text-[10px] text-slate-500 uppercase mb-2">ID PHÒNG CỦA BẠN</p>
+            <p class="text-[10px] text-slate-500 uppercase mb-2">MÃ PHÒNG CỦA BẠN</p>
             <div class="flex items-center gap-2 bg-black/50 p-1 rounded-xl">
-                <div id="my-id-display" class="flex-1 py-2 font-mono font-bold text-yellow-500 text-sm italic">Đang lấy mã...</div>
-                <button onclick="ui.copyID()" class="bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-all active:scale-90">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                </button>
+                <div id="my-id-display" class="flex-1 py-2 font-mono font-bold text-yellow-500 text-sm">Đang lấy mã...</div>
+                <button onclick="ui.copyID()" class="bg-slate-700 p-2 rounded-lg">Copy</button>
             </div>
         </div>
-        <div class="flex flex-col gap-2">
-            <input id="peer-input" type="text" placeholder="Dán mã phòng..." class="w-full px-5 py-4 bg-slate-800 rounded-2xl border border-slate-700 outline-none text-white font-mono text-center">
-            <button onclick="actions.joinRoom()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg border-b-4 border-blue-900">Vào phòng Online</button>
-        </div>
+        <input id="peer-input" type="text" placeholder="Dán mã phòng..." class="w-full px-5 py-4 bg-slate-800 rounded-2xl text-center">
+        <button onclick="actions.joinRoom()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold">Vào phòng Online</button>
     </div>
     <div id="lobby-waiting" class="hidden w-full max-w-sm">
-        <h2 class="text-3xl font-black text-yellow-500 italic mb-8 uppercase">Phòng Chờ</h2>
-        <div id="host-btn-area" class="hidden"><button onclick="game.hostInitiate()" class="w-full py-5 bg-yellow-500 text-black rounded-full font-black text-2xl animate-pulse">BẮT ĐẦU CHIA BÀI</button></div>
+        <div id="host-btn-area" class="hidden"><button onclick="game.hostInitiate()" class="w-full py-5 bg-yellow-500 text-black rounded-full font-black text-2xl">BẮT ĐẦU</button></div>
         <p id="client-msg" class="hidden text-blue-400 font-bold animate-pulse">ĐANG ĐỢI CHỦ PHÒNG...</p>
     </div>
 </div>
@@ -64,29 +57,21 @@
         <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold" id="name-2">BOT 2</div>
     </div>
     <div class="flex justify-between items-center w-full px-2 md:px-20 relative">
-        <div class="flex flex-col items-center">
-            <div id="avatar-1" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl border-4 border-transparent transition-all">🤖</div>
-            <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold" id="name-1">BOT 1</div>
-        </div>
-        <div id="table-field" class="flex-1 h-48 flex items-center justify-center -space-x-10 md:-space-x-16"></div>
-        <div class="flex flex-col items-center">
-            <div id="avatar-3" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl border-4 border-transparent transition-all">🤖</div>
-            <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold" id="name-3">BOT 3</div>
-        </div>
+        <div class="flex flex-col items-center"><div id="avatar-1" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl border-4 border-transparent transition-all">🤖</div><div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold" id="name-1">BOT 1</div></div>
+        <div id="table-field" class="flex-1 h-48 flex items-center justify-center -space-x-10"></div>
+        <div class="flex flex-col items-center"><div id="avatar-3" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl border-4 border-transparent transition-all">🤖</div><div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold" id="name-3">BOT 3</div></div>
     </div>
     <div class="flex flex-col items-center pb-4">
-        <div id="hand-display" class="flex justify-center -space-x-8 md:-space-x-12 mb-20 md:mb-28 h-24"></div>
-        <div id="game-controls" class="fixed bottom-6 flex gap-2 md:gap-4 opacity-0 pointer-events-none transition-all duration-300">
-            <button id="btn-skip" onclick="game.handleSkip()" class="px-4 py-3 bg-slate-900 rounded-xl font-bold border-b-4 border-black uppercase text-[10px]">Bỏ qua</button>
-            <button onclick="game.getHint()" class="px-4 py-3 bg-emerald-600 text-white rounded-xl font-bold border-b-4 border-emerald-900 uppercase text-[10px]">Gợi ý</button>
-            <button onclick="game.handlePlay()" class="px-8 py-3 bg-yellow-500 text-black rounded-xl font-black text-lg border-b-4 border-yellow-700 uppercase shadow-2xl">Đánh</button>
-            <button onclick="game.sortHand()" class="px-4 py-3 bg-blue-600 rounded-xl font-bold border-b-4 border-blue-900 uppercase text-[10px]">Xếp</button>
+        <div id="hand-display" class="flex justify-center -space-x-8 md:-space-x-12 mb-20 h-24"></div>
+        <div id="game-controls" class="fixed bottom-6 flex gap-2 md:gap-4 opacity-0 pointer-events-none transition-all">
+            <button id="btn-skip" onclick="game.handleSkip()" class="px-4 py-3 bg-slate-900 rounded-xl font-bold text-[10px] uppercase">Bỏ qua</button>
+            <button onclick="game.getHint()" class="px-4 py-3 bg-emerald-600 text-white rounded-xl font-bold text-[10px] uppercase">Gợi ý</button>
+            <button onclick="game.handlePlay()" class="px-8 py-3 bg-yellow-500 text-black rounded-xl font-black text-lg uppercase shadow-2xl">Đánh</button>
+            <button onclick="game.sortHand()" class="px-4 py-3 bg-blue-600 rounded-xl font-bold text-[10px] uppercase">Xếp</button>
         </div>
     </div>
-    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl md:text-7xl font-black text-yellow-400 italic uppercase opacity-0 transition-all duration-300 text-center"></div>
+    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl md:text-7xl font-black text-yellow-400 italic uppercase opacity-0 transition-all text-center"></div>
 </div>
-
-<audio id="bgm" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3" type="audio/mpeg"></audio>
 
 <script>
 const RANKS = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
@@ -137,10 +122,7 @@ const Rule = {
             for (let s = Math.min(hand.length, 12); s >= 1; s--) {
                 findSubsets(s).forEach(subset => {
                     const combo = this.getCombo(subset);
-                    if (combo) {
-                        if (isFirst) { if (subset.some(card => card.w === 0)) results.push({ cards: subset, combo }); }
-                        else results.push({ cards: subset, combo });
-                    }
+                    if (combo && (!isFirst || subset.some(c=>c.w===0))) results.push({ cards: subset, combo });
                 });
             }
         } else {
@@ -169,12 +151,9 @@ const game = {
         this.turn = this.findStart();
         this.lastM = null; this.skipped = [false,false,false,false]; this.isFirst = true;
         ui.hideLobby(); this.render();
-        this.triggerAI();
+        this.checkTurn();
     },
-    findStart() {
-        for(let i=0; i<4; i++) if(this.hands[i].some(c => c.w === 0)) return i;
-        return 0;
-    },
+    findStart() { for(let i=0; i<4; i++) if(this.hands[i].some(c => c.w === 0)) return i; return 0; },
     render() {
         const hDiv = document.getElementById('hand-display');
         hDiv.innerHTML = '';
@@ -187,9 +166,9 @@ const game = {
         });
         for(let i=1; i<=3; i++) {
             const idx = (this.myIdx + i) % 4;
-            const isOpp = net.conn && idx === (this.myIdx === 0 ? 1 : 0);
-            document.getElementById(`name-${i}`).innerText = `${isOpp ? 'PLAYER' : 'BOT'} (${this.hands[idx].length})`;
-            document.getElementById(`avatar-${i}`).innerText = isOpp ? '👤' : '🤖';
+            const isClientPlayer = net.conn && idx === (this.myIdx === 0 ? 1 : 0);
+            document.getElementById(`name-${i}`).innerText = `${isClientPlayer ? 'PLAYER' : 'BOT'} (${this.hands[idx].length})`;
+            document.getElementById(`avatar-${i}`).innerText = isClientPlayer ? '👤' : '🤖';
             document.getElementById(`avatar-${i}`).classList.toggle('turn-active', this.turn === idx);
         }
         const isMyTurn = this.turn === this.myIdx;
@@ -201,11 +180,11 @@ const game = {
     handlePlay() {
         const sel = this.hands[this.myIdx].filter(c => this.selectedIds.has(c.id));
         if (Rule.canBeat(sel, this.lastM, this.isFirst)) {
-            const move = { type: 'MOVE', p: this.myIdx, weights: sel.map(c=>c.w), combo: Rule.getCombo(sel) };
-            this.applyMove(move); net.send(move); this.selectedIds.clear();
+            const d = { type: 'MOVE', p: this.myIdx, weights: sel.map(c=>c.w), combo: Rule.getCombo(sel) };
+            this.applyMove(d); net.send(d); this.selectedIds.clear();
         } else ui.toast("KHÔNG HỢP LỆ");
     },
-    handleSkip() { if(this.turn === this.myIdx && this.lastM) { this.applySkip({p:this.myIdx}); net.send({type:'SKIP', p:this.myIdx}); } },
+    handleSkip() { if(this.turn === this.myIdx && this.lastM) { const d={type:'SKIP',p:this.myIdx}; this.applySkip(d); net.send(d); } },
     applyMove(d) {
         this.hands[d.p] = this.hands[d.p].filter(c => !d.weights.includes(c.w));
         this.lastM = d.combo; this.isFirst = false; this.skipped = [false,false,false,false];
@@ -215,39 +194,50 @@ const game = {
     applySkip(d) { this.skipped[d.p] = true; ui.toast(`P${d.p} BỎ QUA`); this.next(); },
     next() {
         if (this.hands[this.turn].length === 0) { ui.toast(`P${this.turn} THẮNG!`); setTimeout(()=>location.reload(), 5000); return; }
+        
         this.turn = (this.turn + 1) % 4;
         const activeCount = this.skipped.filter(s => !s).length;
-        if (activeCount === 1 && !this.skipped[this.turn]) {
-            this.lastM = null; this.skipped = [false,false,false,false]; ui.toast("VÒNG MỚI");
-        } else if (this.skipped[this.turn]) { return this.next(); }
-        this.render(); this.triggerAI();
+
+        // Nếu chỉ còn 1 người duy nhất chưa skip, người đó được đánh bài mới
+        if (activeCount === 1) {
+            const lastMan = this.skipped.findIndex(s => !s);
+            if (this.turn === lastMan) {
+                this.lastM = null; this.skipped = [false,false,false,false]; ui.toast("VÒNG MỚI");
+                this.render(); this.checkTurn();
+                return;
+            } else {
+                return setTimeout(() => this.next(), 50); // Chuyển nhanh qua người đã skip
+            }
+        }
+
+        if (this.skipped[this.turn]) return setTimeout(() => this.next(), 50);
+        
+        this.render(); this.checkTurn();
     },
-    triggerAI() {
+    checkTurn() {
         if (net.isHost && this.turn !== this.myIdx) {
-            const isClient = net.conn && this.turn === (this.myIdx === 0 ? 1 : 0);
+            // Trong chế độ Online, Host điều khiển các BOT (trừ Client Player ở vị trí 1)
+            const isClient = net.conn && this.turn === 1;
             if (!isClient) setTimeout(() => this.botPlay(), 1000);
         }
     },
     botPlay() {
         const moves = Rule.findAllValidMoves(this.hands[this.turn], this.lastM, this.isFirst);
         if (moves.length > 0) {
-            let move = moves[0];
-            if (!this.lastM && !this.isFirst) {
-                move = moves.find(m => m.combo.type === 'straight' && m.combo.len >= 4) || moves.find(m => m.combo.type === 'triple') || move;
-            }
-            if (this.lastM && move.combo.p >= 48 && this.lastM.p < 32 && this.hands[this.turn].length > 4) {
-                this.applySkip({p:this.turn}); net.send({type:'SKIP', p:this.turn});
+            let m = moves[0];
+            if (!this.lastM && !this.isFirst) m = moves.find(x => x.combo.type === 'straight' && x.combo.len >= 4) || m;
+            if (this.lastM && m.combo.p >= 48 && this.lastM.p < 32 && this.hands[this.turn].length > 4) {
+                const d={type:'SKIP',p:this.turn}; this.applySkip(d); net.send(d);
             } else {
-                const d = { type: 'MOVE', p: this.turn, weights: move.cards.map(c=>c.w), combo: move.combo };
+                const d = { type: 'MOVE', p: this.turn, weights: m.cards.map(c=>c.w), combo: m.combo };
                 this.applyMove(d); net.send(d);
             }
-        } else { this.applySkip({p:this.turn}); net.send({type:'SKIP', p:this.turn}); }
+        } else { const d={type:'SKIP',p:this.turn}; this.applySkip(d); net.send(d); }
     },
     getHint() {
         const moves = Rule.findAllValidMoves(this.hands[this.myIdx], this.lastM, this.isFirst);
-        if (moves.length > 0) {
-            this.selectedIds.clear(); moves[0].cards.forEach(c => this.selectedIds.add(c.id)); this.render();
-        } else ui.toast("KHÔNG THỂ CHẶN");
+        if (moves.length > 0) { this.selectedIds.clear(); moves[0].cards.forEach(c => this.selectedIds.add(c.id)); this.render(); }
+        else ui.toast("KHÔNG CÓ BÀI CHẶN");
     },
     sortHand() { this.hands[this.myIdx].sort((a,b)=>a.w-b.w); this.render(); },
     hostInitiate() {
@@ -276,20 +266,14 @@ const net = {
 };
 
 const actions = {
-    startSolo() { sfx.init(); net.isHost = true; game.start(this.gen(), 0); },
-    joinRoom() { 
-        const id = document.getElementById('peer-input').value.trim();
-        if(id) { sfx.init(); net.conn = net.peer.connect(id); net.isHost = false; net.setup(); }
-    },
-    gen() {
-        const d = Array.from({length:52}, (_,i)=>i).sort(()=>Math.random()-0.5);
-        return [d.slice(0,13), d.slice(13,26), d.slice(26,39), d.slice(39,52)];
-    }
+    startSolo() { net.isHost = true; game.start(this.gen(), 0); },
+    joinRoom() { const id = document.getElementById('peer-input').value.trim(); if(id) { net.conn = net.peer.connect(id); net.isHost = false; net.setup(); } },
+    gen() { const d = Array.from({length:52}, (_,i)=>i).sort(()=>Math.random()-0.5); return [d.slice(0,13), d.slice(13,26), d.slice(26,39), d.slice(39,52)]; }
 };
 
 const ui = {
     showWaiting(h) { document.getElementById('lobby-home').classList.add('hidden'); document.getElementById('lobby-waiting').classList.remove('hidden'); if(h) document.getElementById('host-btn-area').classList.remove('hidden'); else document.getElementById('client-msg').classList.remove('hidden'); },
-    hideLobby() { document.getElementById('ui-lobby').classList.add('hidden'); document.getElementById('game-board').classList.remove('hidden'); document.getElementById('bgm').play().catch(()=>{}); },
+    hideLobby() { document.getElementById('ui-lobby').classList.add('hidden'); document.getElementById('game-board').classList.remove('hidden'); },
     toast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.opacity = "1"; setTimeout(()=> t.style.opacity = "0", 2000); },
     renderField(cards) {
         const f = document.getElementById('table-field'); f.innerHTML = '';
@@ -303,7 +287,6 @@ const ui = {
     copyID() { const id = document.getElementById('my-id-display').innerText; if(id && !id.includes("...")) navigator.clipboard.writeText(id).then(()=>this.toast("ĐÃ SAO CHÉP!")); }
 };
 
-const sfx = { ctx: null, init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } };
 net.init();
 </script>
 </body>
