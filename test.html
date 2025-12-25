@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tiến Lên Miền Nam</title>
+    <title>Tiến Lên Miền Nam - Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Quicksand:wght@700&display=swap" rel="stylesheet">
@@ -34,16 +34,25 @@
 <!-- LOBBY -->
 <div id="ui-lobby" class="fixed inset-0 lobby-screen flex flex-col items-center justify-center p-6 text-center">
     <h1 class="text-6xl font-black text-yellow-500 italic mb-2 tracking-tighter" style="font-family: 'Montserrat'">TIẾN LÊN</h1>
-    <p class="text-slate-500 text-[10px] tracking-[0.4em] mb-10 uppercase">AI Edition</p>
+    <p class="text-slate-500 text-[10px] tracking-[0.4em] mb-10 uppercase">AI & Hint Edition</p>
     
     <div id="lobby-home" class="w-full max-w-sm space-y-4">
         <button onclick="actions.startSolo()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-xl shadow-lg border-b-4 border-emerald-900 active:border-b-0 active:translate-y-1 transition-all uppercase">Chơi với Bot AI</button>
+        
         <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
-            <p class="text-[10px] text-slate-500 uppercase mb-2">ID CỦA BẠN</p>
-            <div id="my-id-display" class="py-2 font-mono font-bold text-yellow-500 text-sm italic">Đang lấy...</div>
+            <p class="text-[10px] text-slate-500 uppercase mb-2">ID PHÒNG CỦA BẠN</p>
+            <div class="flex items-center gap-2 bg-black/50 p-1 rounded-xl">
+                <div id="my-id-display" class="flex-1 py-2 font-mono font-bold text-yellow-500 text-sm italic">Đang lấy mã...</div>
+                <button onclick="ui.copyID()" class="bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-all active:scale-90">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                </button>
+            </div>
         </div>
+
         <div class="flex flex-col gap-2">
-            <input id="peer-input" type="text" placeholder="Dán mã phòng..." class="w-full px-5 py-4 bg-slate-800 rounded-2xl border border-slate-700 outline-none text-white font-mono text-center">
+            <input id="peer-input" type="text" placeholder="Dán mã phòng bạn bè..." class="w-full px-5 py-4 bg-slate-800 rounded-2xl border border-slate-700 outline-none text-white font-mono text-center">
             <button onclick="actions.joinRoom()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg border-b-4 border-blue-900">Vào phòng Online</button>
         </div>
     </div>
@@ -51,9 +60,9 @@
     <div id="lobby-waiting" class="hidden w-full max-w-sm">
         <h2 class="text-3xl font-black text-yellow-500 italic mb-8 uppercase">Phòng Chờ</h2>
         <div id="host-btn-area" class="hidden">
-            <button onclick="game.hostInitiate()" class="w-full py-5 bg-yellow-500 text-black rounded-full font-black text-2xl animate-pulse">CHIA BÀI</button>
+            <button onclick="game.hostInitiate()" class="w-full py-5 bg-yellow-500 text-black rounded-full font-black text-2xl animate-pulse">BẮT ĐẦU CHIA BÀI</button>
         </div>
-        <p id="client-msg" class="hidden text-blue-400 font-bold animate-pulse">ĐANG ĐỢI CHỦ PHÒNG...</p>
+        <p id="client-msg" class="hidden text-blue-400 font-bold animate-pulse">ĐANG ĐỢI CHỦ PHÒNG BẮT ĐẦU...</p>
     </div>
 </div>
 
@@ -69,7 +78,7 @@
             <div id="avatar-1" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent transition-all">🤖</div>
             <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold" id="name-1">BOT 1</div>
         </div>
-        <div id="table-field" class="flex-1 h-48 flex items-center justify-center -space-x-10"></div>
+        <div id="table-field" class="flex-1 h-48 flex items-center justify-center -space-x-10 md:-space-x-16"></div>
         <div class="flex flex-col items-center">
             <div id="avatar-3" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent transition-all">🤖</div>
             <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold" id="name-3">BOT 3</div>
@@ -91,7 +100,7 @@
 <audio id="bgm" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3" type="audio/mpeg"></audio>
 
 <script>
-/** 1. LOGIC BÀI & TỔ HỢP **/
+/** 1. LOGIC & AI CORE **/
 const RANKS = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
 const SUITS = ['♠', '♣', '♦', '♥'];
 const COLORS = ['card-black', 'card-black', 'card-red', 'card-red'];
@@ -122,50 +131,35 @@ const Rule = {
         if (isFirst) return newCards.some(card => card.w === 0);
         if (!lastM) return true;
         if (c.type === lastM.type && (c.len || 0) === (lastM.len || 0)) return c.p > lastM.p;
-        if (lastM.type === 'single' && lastM.p >= 48 && (c.type === 'quad')) return true;
+        if (lastM.type === 'single' && lastM.p >= 48 && c.type === 'quad') return true;
         return false;
     },
 
-    // Tìm tất cả nước đi có thể đánh
     findAllValidMoves(hand, lastM) {
         let results = [];
-        const len = hand.length;
-
-        // Hàm đệ quy tìm tổ hợp
         const findSubsets = (size) => {
             let subsets = [];
             const helper = (start, current) => {
-                if (current.length === size) {
-                    subsets.push([...current]);
-                    return;
-                }
+                if (current.length === size) { subsets.push([...current]); return; }
                 for (let i = start; i < hand.length; i++) {
-                    current.push(hand[i]);
-                    helper(i + 1, current);
-                    current.pop();
+                    current.push(hand[i]); helper(i + 1, current); current.pop();
                 }
             }
-            helper(0, []);
-            return subsets;
+            helper(0, []); return subsets;
         }
 
         if (!lastM) {
-            // Tự do: Tìm Sảnh dài nhất -> Bộ 3 -> Đôi -> Đơn
-            for (let s = Math.min(len, 12); s >= 1; s--) {
+            for (let s = Math.min(hand.length, 12); s >= 1; s--) {
                 findSubsets(s).forEach(subset => {
                     const combo = this.getCombo(subset);
                     if (combo) results.push({ cards: subset, combo });
                 });
             }
         } else {
-            // Chặn: Chỉ tìm tổ hợp cùng kích thước hoặc đặc biệt
             const targetSize = (lastM.type === 'straight') ? lastM.len : (lastM.type === 'triple' ? 3 : (lastM.type === 'pair' ? 2 : 1));
             findSubsets(targetSize).forEach(subset => {
-                if (this.canBeat(subset, lastM, false)) {
-                    results.push({ cards: subset, combo: this.getCombo(subset) });
-                }
+                if (this.canBeat(subset, lastM, false)) results.push({ cards: subset, combo: this.getCombo(subset) });
             });
-            // Tìm tứ quý chặn heo
             if (lastM.type === 'single' && lastM.p >= 48) {
                 findSubsets(4).forEach(subset => {
                     const c = this.getCombo(subset);
@@ -187,8 +181,7 @@ const game = {
         this.hands = weights.map(wArr => wArr.map(w => weightToCard(w)).sort((a,b)=>a.w - b.w));
         this.turn = this.findStart();
         this.lastM = null; this.skipped = [false,false,false,false]; this.isFirst = true;
-        ui.hideLobby();
-        this.render();
+        ui.hideLobby(); this.render();
         if (this.turn !== this.myIdx && net.isHost) setTimeout(() => this.botPlay(), 1500);
     },
 
@@ -202,7 +195,6 @@ const game = {
         const validMoves = Rule.findAllValidMoves(this.hands[this.myIdx], this.lastM);
         if (validMoves.length > 0) {
             this.selectedIds.clear();
-            // Gợi ý nước nhỏ nhất
             validMoves[0].cards.forEach(c => this.selectedIds.add(c.id));
             this.render();
             ui.toast("GỢI Ý: " + validMoves[0].combo.type.toUpperCase());
@@ -212,15 +204,11 @@ const game = {
     botPlay() {
         const validMoves = Rule.findAllValidMoves(this.hands[this.turn], this.lastM);
         if (validMoves.length > 0) {
-            let move = validMoves[0]; // Mặc định đánh bài nhỏ nhất
-            
-            // Chiến thuật: Nếu đánh tự do, ưu tiên sảnh/bộ lớn
+            let move = validMoves[0];
             if (!this.lastM) {
                 move = validMoves.find(m => m.combo.type === 'straight' && m.combo.len >= 4) || 
                        validMoves.find(m => m.combo.type === 'triple') || move;
             }
-
-            // Không phí Heo (2) chặn bài quá nhỏ (dưới 10)
             if (this.lastM && move.combo.p >= 48 && this.lastM.p < 32 && this.hands[this.turn].length > 4) {
                 this.applySkip({ p: this.turn }); net.send({ type: 'SKIP', p: this.turn });
             } else {
@@ -323,8 +311,7 @@ const net = {
         this.peer = new Peer();
         this.peer.on('open', id => document.getElementById('my-id-display').innerText = id);
         this.peer.on('connection', c => {
-            if(this.conn) return; this.conn = c; this.isHost = true;
-            this.setup();
+            if(this.conn) return; this.conn = c; this.isHost = true; this.setup();
         });
     },
     setup() {
@@ -375,6 +362,12 @@ const ui = {
             el.style.transform = `rotate(${Math.random()*20-10}deg) scale(0.9)`;
             el.innerHTML = `<span class="text-xl font-black">${c.n}</span><span class="text-2xl">${c.i}</span>`;
             f.appendChild(el);
+        });
+    },
+    copyID() {
+        const id = document.getElementById('my-id-display').innerText;
+        navigator.clipboard.writeText(id).then(() => {
+            this.toast("ĐÃ SAO CHÉP!");
         });
     }
 };
