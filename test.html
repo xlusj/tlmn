@@ -3,41 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tiến Lên Miền Nam - Pro</title>
+    <title>Tiến Lên Miền Nam - Ultimate Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Quicksand:wght@700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Quicksand', sans-serif; background: #020617; overflow: hidden; touch-action: manipulation; }
-        .poker-table { background: radial-gradient(circle, #1a4731 0%, #061a12 100%); border: 8px solid #3d1a04; box-shadow: inset 0 0 150px rgba(0,0,0,1); }
+        .poker-table { background: radial-gradient(circle, #1a4731 0%, #061a12 100%); border: 8px solid #3d1a04; box-shadow: inset 0 0 150px rgba(0,0,0,1); position: relative; }
+        
         .card {
-            width: 58px; height: 84px; background: white; border-radius: 8px;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6); display: flex; flex-direction: column; padding: 5px; font-weight: 900;
+            width: 55px; height: 80px; background: white; border-radius: 6px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; flex-direction: column; padding: 4px; font-weight: 900;
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0);
+            opacity: 0; pointer-events: none;
         }
-        @media (min-width: 768px) { .card { width: 90px; height: 130px; padding: 10px; } }
-        .card.selected { transform: translateY(-35px) scale(1.05); border: 3px solid #facc15; z-index: 50; box-shadow: 0 10px 25px rgba(250,204,21,0.5); }
+        @media (min-width: 768px) { .card { width: 85px; height: 120px; padding: 8px; } }
+        
+        /* Trạng thái bài trên tay */
+        .card.in-hand { position: relative; left: 0; top: 0; transform: none; opacity: 1; scale: 1; pointer-events: auto; }
+        .card.selected { transform: translateY(-30px); border: 3px solid #facc15; z-index: 50; box-shadow: 0 10px 20px rgba(250,204,21,0.5); }
+        
+        /* Trạng thái bài trên bàn */
+        .card.on-table { position: relative; left: 0; top: 0; transform: scale(0.9); opacity: 1; pointer-events: none; }
+
         .card-red { color: #e11d48; }
         .card-black { color: #1e293b; }
-        .turn-active { border: 4px solid #facc15; box-shadow: 0 0 30px #facc15; }
+        
+        .turn-active { border: 4px solid #facc15; box-shadow: 0 0 25px #facc15; animation: active-glow 1.5s infinite; }
+        @keyframes active-glow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        
         #toast { pointer-events: none; z-index: 9999; text-shadow: 2px 2px 10px rgba(0,0,0,1); }
-        .lobby-panel { background: rgba(13, 17, 23, 0.98); backdrop-filter: blur(20px); z-index: 1000; }
+        .lobby-screen { background: rgba(13, 17, 23, 0.98); backdrop-filter: blur(15px); z-index: 2000; }
+        
+        .dealing-deck { width: 60px; height: 85px; background: #1e293b; border: 2px solid #334155; border-radius: 6px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 5px 5px 0 #0f172a; }
     </style>
 </head>
 <body class="flex items-center justify-center h-screen w-screen text-white select-none">
 
-<!-- LOBBY -->
-<div id="ui-lobby" class="fixed inset-0 lobby-panel flex flex-col items-center justify-center p-6 text-center">
-    <h1 class="text-6xl font-black text-yellow-500 italic mb-2" style="font-family: 'Montserrat'">TIẾN LÊN</h1>
-    <p class="text-slate-600 text-[10px] tracking-[0.4em] mb-12 uppercase">V4.0 Stable Edition</p>
+<!-- LOBBY UI -->
+<div id="ui-lobby" class="fixed inset-0 lobby-screen flex flex-col items-center justify-center p-6 text-center">
+    <h1 class="text-6xl font-black text-yellow-500 italic mb-2 tracking-tighter" style="font-family: 'Montserrat'">TIẾN LÊN</h1>
+    <p class="text-slate-500 text-[10px] tracking-[0.4em] mb-10 uppercase">Final Stable Edition v6.0</p>
     
     <div id="lobby-home" class="w-full max-w-sm space-y-4">
-        <button onclick="actions.startSolo()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-xl shadow-lg border-b-4 border-emerald-900 active:border-b-0 active:translate-y-1 transition-all">CHƠI VỚI BOT (OFFLINE)</button>
+        <button onclick="actions.startSolo()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-xl shadow-lg border-b-4 border-emerald-900 active:border-b-0 active:translate-y-1 transition-all uppercase">Chơi với Bot</button>
         
+        <div class="h-px bg-slate-800 w-full my-4"></div>
+
         <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
-            <p class="text-[10px] text-slate-500 uppercase mb-2">ID Phòng Của Bạn</p>
+            <p class="text-[10px] text-slate-500 uppercase mb-2">ID Phòng của bạn</p>
             <div class="flex items-center gap-2 bg-black/50 p-1 rounded-xl">
-                <div id="my-id-display" class="flex-1 py-2 font-mono font-bold text-yellow-500 text-sm italic">Đang lấy mã...</div>
+                <div id="my-id-display" class="flex-1 py-2 font-mono font-bold text-yellow-500 text-sm italic">Đang lấy...</div>
                 <button id="copy-btn" onclick="actions.copyID()" class="bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-all active:scale-90">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
                 </button>
@@ -45,56 +62,65 @@
         </div>
 
         <div class="flex flex-col gap-2">
-            <input id="peer-input" type="text" placeholder="Dán mã phòng bạn bè..." class="w-full px-5 py-4 bg-slate-800 rounded-2xl border border-slate-700 outline-none focus:ring-2 ring-blue-500 text-white font-mono text-center">
-            <button onclick="actions.joinRoom()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg border-b-4 border-blue-900 active:border-b-0 active:translate-y-1">VÀO PHÒNG</button>
+            <input id="peer-input" type="text" placeholder="Dán mã phòng..." class="w-full px-5 py-4 bg-slate-800 rounded-2xl border border-slate-700 outline-none focus:ring-2 ring-blue-500 text-white font-mono text-center">
+            <button onclick="actions.joinRoom()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg border-b-4 border-blue-900 active:border-b-0 active:translate-y-1 transition-all">Vào phòng</button>
         </div>
     </div>
 
     <!-- WAITING ROOM -->
-    <div id="lobby-waiting" class="hidden w-full max-w-sm">
+    <div id="lobby-waiting" class="hidden w-full max-w-sm animate-in fade-in duration-300">
         <h2 class="text-3xl font-black text-yellow-500 italic mb-8 uppercase">Phòng Chờ</h2>
         <div class="grid grid-cols-2 gap-4 mb-10">
             <div class="bg-slate-900 p-6 rounded-3xl border-2 border-emerald-500">
                 <div class="text-4xl mb-2">👑</div>
                 <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Chủ Phòng</div>
             </div>
-            <div id="slot-client" class="bg-slate-900/50 p-6 rounded-3xl border-2 border-dashed border-slate-800 flex flex-col items-center justify-center transition-all">
-                <div id="client-icon" class="text-4xl mb-2 opacity-20">👤</div>
+            <div id="slot-client" class="bg-slate-900/50 p-6 rounded-3xl border-2 border-dashed border-slate-800 flex flex-col items-center justify-center">
+                <div id="client-icon" class="text-4xl mb-2 opacity-20 transition-all duration-500">👤</div>
                 <div id="client-text" class="text-[10px] text-slate-500 font-bold uppercase">Chờ khách...</div>
             </div>
         </div>
         <div id="host-btn-area" class="hidden">
-            <button onclick="game.hostStart()" class="w-full py-5 bg-yellow-500 text-black rounded-full font-black text-2xl shadow-2xl animate-pulse">BẮT ĐẦU NGAY</button>
+            <button onclick="game.hostInitiate()" class="w-full py-5 bg-yellow-500 text-black rounded-full font-black text-2xl shadow-2xl animate-pulse">BẮT ĐẦU CHIA BÀI</button>
         </div>
-        <div id="client-msg" class="hidden text-blue-400 font-bold animate-pulse uppercase">Chờ chủ phòng chia bài...</div>
+        <div id="client-msg" class="hidden text-blue-400 font-bold animate-pulse text-sm">CHỦ PHÒNG ĐANG CHUẨN BỊ...</div>
     </div>
 </div>
 
-<!-- GAME BOARD -->
+<!-- GAME TABLE -->
 <div id="game-board" class="fixed inset-0 poker-table hidden flex flex-col justify-between p-4 overflow-hidden">
+    <!-- Top Player -->
     <div class="flex flex-col items-center">
-        <div id="av-2" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent">🤖</div>
-        <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold tracking-tighter">BOT 2 (<span id="count-2">13</span>)</div>
+        <div id="av-2" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent transition-all">🤖</div>
+        <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold">BOT 2 (<span id="count-2">0</span>)</div>
     </div>
 
-    <div class="flex justify-between items-center w-full px-2 md:px-20">
+    <!-- Center Field -->
+    <div class="flex justify-between items-center w-full px-2 md:px-20 relative">
         <div class="flex flex-col items-center">
-            <div id="av-1" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent">👤</div>
-            <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold tracking-tighter">P1 (<span id="count-1">13</span>)</div>
+            <div id="av-1" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent transition-all">👤</div>
+            <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold">P1 (<span id="count-1">0</span>)</div>
         </div>
+        
+        <!-- Field for cards played -->
         <div id="table-field" class="flex-1 h-48 flex items-center justify-center -space-x-10 md:-space-x-16"></div>
+
         <div class="flex flex-col items-center">
-            <div id="av-3" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent">🤖</div>
-            <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold tracking-tighter">BOT 3 (<span id="count-3">13</span>)</div>
+            <div id="av-3" class="w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent transition-all">🤖</div>
+            <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold">BOT 3 (<span id="count-3">0</span>)</div>
         </div>
+
+        <!-- Dealing animation source -->
+        <div id="dealing-deck" class="dealing-deck hidden"></div>
     </div>
 
+    <!-- My Controls & Hand -->
     <div class="flex flex-col items-center pb-4">
-        <div id="hand-display" class="flex justify-center -space-x-8 md:-space-x-12 mb-20 md:mb-28 h-24 transition-all"></div>
-        <div class="fixed bottom-6 flex gap-4 md:gap-8 scale-90 md:scale-100">
-            <button onclick="game.handleSkip()" class="px-8 py-3 bg-slate-800 rounded-full font-bold border-b-4 border-black uppercase text-xs">Bỏ qua</button>
+        <div id="hand-display" class="flex justify-center -space-x-8 md:-space-x-12 mb-20 md:mb-28 h-24"></div>
+        <div id="game-controls" class="fixed bottom-6 flex gap-4 md:gap-8 scale-90 md:scale-110 opacity-0 pointer-events-none transition-all duration-500">
+            <button onclick="game.handleSkip()" class="px-8 py-3 bg-slate-900 rounded-full font-bold border-b-4 border-black uppercase text-xs">Bỏ qua</button>
             <button onclick="game.handlePlay()" class="px-12 py-3 bg-yellow-500 text-black rounded-full font-black text-xl border-b-4 border-yellow-700 uppercase shadow-2xl">Đánh bài</button>
-            <button onclick="game.sortHand()" class="px-8 py-3 bg-blue-600 rounded-full font-bold border-b-4 border-blue-950 uppercase text-xs tracking-tighter">Xếp bài</button>
+            <button onclick="game.sortHand()" class="px-8 py-3 bg-blue-600 rounded-full font-bold border-b-4 border-blue-900 uppercase text-xs">Xếp bài</button>
         </div>
     </div>
 
@@ -104,17 +130,17 @@
 <audio id="bgm" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3" type="audio/mpeg"></audio>
 
 <script>
-/** ENGINE CORE **/
+/** 1. CORE DATA **/
 const RANKS = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
 const SUITS = ['♠', '♣', '♦', '♥'];
 const COLORS = ['card-black', 'card-black', 'card-red', 'card-red'];
 
-function createCard(w) {
-    const r = Math.floor(w / 4);
-    const s = w % 4;
+function weightToCard(w) {
+    const r = Math.floor(w / 4); const s = w % 4;
     return { r, s, w, n: RANKS[r], i: SUITS[s], c: COLORS[s], id: `c-${w}` };
 }
 
+/** 2. SOUNDS **/
 const sfx = {
     ctx: null,
     init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
@@ -128,15 +154,16 @@ const sfx = {
         o.start(); o.stop(this.ctx.currentTime + d);
     },
     click() { this.play(500, 'sine', 0.1); },
+    deal() { this.play(800, 'square', 0.05, 0.05); },
     win() { [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => this.play(f, 'triangle', 0.5), i*150)); }
 };
 
+/** 3. RULES **/
 const Rule = {
     getCombo(cards) {
         if (!cards.length) return null;
         const s = [...cards].sort((a,b) => a.w - b.w);
-        const r = s.map(c => c.r);
-        const len = s.length;
+        const r = s.map(c => c.r); const len = s.length;
         if (len === 1) return { type: 'single', p: s[0].w };
         const isSame = r.every(v => v === r[0]);
         if (len === 2 && isSame) return { type: 'pair', p: s[len-1].w };
@@ -145,9 +172,9 @@ const Rule = {
         const isSeq = r.every((v, i) => i === 0 || v === r[i-1] + 1) && !r.includes(12);
         if (len >= 3 && isSeq) return { type: 'straight', p: s[len-1].w, len };
         if (len >= 6 && len % 2 === 0) {
-            let pairs = true;
-            for(let i=0; i<len; i+=2) if(r[i] !== r[i+1] || (i>0 && r[i] !== r[i-2]+1)) pairs = false;
-            if (pairs && !r.includes(12)) return { type: 'series', p: s[len-1].w, len: len/2 };
+            let pCount = 0;
+            for(let i=0; i<len; i+=2) if(r[i] === r[i+1] && (i===0 || r[i] === r[i-2]+1)) pCount++;
+            if (pCount === len/2 && !r.includes(12)) return { type: 'series', p: s[len-1].w, len: len/2 };
         }
         return null;
     },
@@ -157,6 +184,7 @@ const Rule = {
         if (isFirst && !newM.some(card => card.w === 0)) return false; 
         if (!lastM) return true;
         if (c.type === lastM.type && (c.len || 0) === (lastM.len || 0)) return c.p > lastM.p;
+        // Chặt heo logic
         if (lastM.type === 'single' && lastM.p >= 48) {
             if (c.type === 'quad' || (c.type === 'series' && c.len >= 3)) return true;
         }
@@ -176,21 +204,24 @@ const Rule = {
     }
 };
 
+/** 4. GAME ENGINE **/
 const game = {
     hands: [[],[],[],[]], turn: 0, lastM: null, skipped: [false,false,false,false],
-    myIdx: 0, selectedIds: new Set(), isFirst: true,
+    myIdx: 0, selectedIds: new Set(), isFirst: true, isAnimating: false,
 
-    start(weights) {
-        this.hands = weights.map(wArr => wArr.map(w => createCard(w)).sort((a,b)=>a.w - b.w));
+    async start(weights) {
+        this.isAnimating = true;
+        this.hands = weights.map(wArr => wArr.map(w => weightToCard(w)).sort((a,b)=>a.w - b.w));
         this.turn = this.findStart();
-        this.isFirst = true;
-        this.lastM = null;
-        this.skipped = [false,false,false,false];
+        this.isFirst = true; this.lastM = null; this.skipped = [false,false,false,false];
         this.selectedIds.clear();
         
         ui.hideLobby();
-        this.checkToiTrang();
+        await ui.animateDealing();
+        
+        this.isAnimating = false;
         this.render();
+        this.checkToiTrang();
         if (this.turn !== this.myIdx && net.isHost) setTimeout(() => this.bot(), 1500);
     },
 
@@ -200,36 +231,33 @@ const game = {
     },
 
     render() {
-        const handDiv = document.getElementById('hand-display');
-        handDiv.innerHTML = '';
-        if (!this.hands[this.myIdx]) return;
+        if(this.isAnimating) return;
+        const hDiv = document.getElementById('hand-display');
+        hDiv.innerHTML = '';
         this.hands[this.myIdx].forEach(c => {
             const el = document.createElement('div');
-            el.className = `card ${c.c} ${this.selectedIds.has(c.id) ? 'selected' : ''}`;
-            el.innerHTML = `<span class="text-xl md:text-3xl font-black leading-none">${c.n}</span><span class="text-3xl md:text-5xl">${c.i}</span>`;
+            el.className = `card in-hand ${c.c} ${this.selectedIds.has(c.id) ? 'selected' : ''}`;
+            el.innerHTML = `<span class="text-xl md:text-3xl font-black">${c.n}</span><span class="text-3xl md:text-5xl">${c.i}</span>`;
             el.onclick = () => {
                 if(this.turn !== this.myIdx) return;
                 this.selectedIds.has(c.id) ? this.selectedIds.delete(c.id) : this.selectedIds.add(c.id);
                 this.render();
             };
-            handDiv.appendChild(el);
+            hDiv.appendChild(el);
         });
 
-        for(let i=1; i<4; i++) {
-            const idx = (this.myIdx + i) % 4;
-            document.getElementById(`count-${i}`).innerText = this.hands[idx].length;
-            const av = document.getElementById(`av-${idx === 0 ? 0 : (idx === game.myIdx ? 0 : (idx === (game.myIdx+1)%4 ? 1 : (idx === (game.myIdx+2)%4 ? 2 : 3)))}`);
-            // Fix index mapping for UI turn display
-            [1,2,3].forEach(pos => {
-                const pIdx = (this.myIdx + pos) % 4;
-                document.getElementById(`av-${pos}`).classList.toggle('turn-active', this.turn === pIdx);
-            });
-            document.getElementById('av-0')?.classList.toggle('turn-active', this.turn === this.myIdx);
-        }
+        [1,2,3].forEach(pos => {
+            const pIdx = (this.myIdx + pos) % 4;
+            document.getElementById(`count-${pos}`).innerText = this.hands[pIdx].length;
+            document.getElementById(`av-${pos}`).classList.toggle('turn-active', this.turn === pIdx);
+        });
+        document.getElementById('av-1').parentNode.classList.toggle('turn-active', this.turn === this.myIdx); 
+        // Note: P1 avatar is reused for local player in simple UI
+        document.getElementById('game-controls').style.opacity = this.turn === this.myIdx ? "1" : "0.5";
+        document.getElementById('game-controls').style.pointerEvents = this.turn === this.myIdx ? "auto" : "none";
     },
 
     handlePlay() {
-        if (this.turn !== this.myIdx) return;
         const sel = this.hands[this.myIdx].filter(c => this.selectedIds.has(c.id));
         if (Rule.canBeat(sel, this.lastM, this.isFirst)) {
             const data = { type: 'MOVE', p: this.myIdx, weights: sel.map(c=>c.w), combo: Rule.getCombo(sel) };
@@ -237,24 +265,21 @@ const game = {
             net.send(data);
             this.selectedIds.clear();
             sfx.click();
-        } else { ui.toast("KHÔNG HỢP LỆ!"); }
+        } else ui.toast("KHÔNG HỢP LỆ!");
     },
 
     applyMove(data) {
         const { p, weights, combo } = data;
-        const cards = weights.map(w => createCard(w));
         this.hands[p] = this.hands[p].filter(hc => !weights.includes(hc.w));
-        this.lastM = combo;
-        this.isFirst = false;
-        ui.renderField(cards);
+        this.lastM = combo; this.isFirst = false;
+        ui.renderField(weights.map(w => weightToCard(w)));
         this.next(p);
     },
 
     handleSkip() {
         if (this.turn !== this.myIdx || !this.lastM) return;
         const data = { type: 'SKIP', p: this.myIdx };
-        this.applySkip(data);
-        net.send(data);
+        this.applySkip(data); net.send(data);
     },
 
     applySkip(data) {
@@ -265,20 +290,16 @@ const game = {
 
     next(curr) {
         if (this.hands[curr].length === 0) {
-            ui.toast(`P${curr} CHIẾN THẮNG!`);
-            sfx.win();
-            setTimeout(() => location.reload(), 5000);
-            return;
+            ui.toast(`P${curr} CHIẾN THẮNG!`); sfx.win();
+            setTimeout(() => location.reload(), 5000); return;
         }
         this.turn = (this.turn + 1) % 4;
         const active = this.skipped.filter(s => !s).length;
         if (active === 1 && !this.skipped[this.turn]) {
-            this.skipped = [false,false,false,false];
-            this.lastM = null;
+            this.skipped = [false,false,false,false]; this.lastM = null;
             ui.toast("VÒNG MỚI");
         } else if (this.skipped[this.turn]) {
-            this.next(this.turn);
-            return;
+            this.next(this.turn); return;
         }
         this.render();
         if (this.turn === this.myIdx) this.autoHighlight();
@@ -287,8 +308,7 @@ const game = {
 
     autoHighlight() {
         if (!this.lastM || this.lastM.p < 48) return;
-        const h = this.hands[this.myIdx];
-        this.selectedIds.clear();
+        const h = this.hands[this.myIdx]; this.selectedIds.clear();
         for(let r=0; r<13; r++) {
             const q = h.filter(c => c.r === r);
             if (q.length === 4) { q.forEach(c => this.selectedIds.add(c.id)); this.render(); return; }
@@ -303,22 +323,18 @@ const game = {
 
     bot() {
         if (this.turn === 1 && net.conn) return;
-        const h = this.hands[this.turn];
-        let move = null;
+        const h = this.hands[this.turn]; let move = null;
         if (this.isFirst) move = [h.find(c => c.w === 0)];
         else if (!this.lastM) move = [h[0]];
         else if (this.lastM.type === 'single') {
-            const b = h.find(c => c.w > this.lastM.p);
-            if (b) move = [b];
+            const b = h.find(c => c.w > this.lastM.p); if (b) move = [b];
         }
         if (move) {
             const data = { type: 'MOVE', p: this.turn, weights: move.map(c=>c.w), combo: Rule.getCombo(move) };
-            this.applyMove(data);
-            net.send(data);
+            this.applyMove(data); net.send(data);
         } else {
             const data = { type: 'SKIP', p: this.turn };
-            this.applySkip(data);
-            net.send(data);
+            this.applySkip(data); net.send(data);
         }
     },
 
@@ -326,8 +342,7 @@ const game = {
         this.hands.forEach((h, i) => {
             const r = Array(13).fill(0); h.forEach(c => r[c.r]++);
             if (r[12] === 4 || r.every(v => v > 0) || r.filter(v => v >= 2).length >= 6) {
-                ui.toast(`P${i} TỚI TRẮNG!`);
-                sfx.win();
+                ui.toast(`P${i} TỚI TRẮNG!`); sfx.win();
                 setTimeout(() => location.reload(), 5000);
             }
         });
@@ -335,32 +350,28 @@ const game = {
 
     sortHand() { this.hands[this.myIdx].sort((a,b)=>a.w-b.w); this.render(); },
     
-    hostStart() {
+    hostInitiate() {
         const d = Array.from({length: 52}, (_, i) => i).sort(() => Math.random() - 0.5);
         const weights = [d.slice(0,13), d.slice(13,26), d.slice(26,39), d.slice(39,52)];
-        net.send({ type: 'SYNC', weights });
+        net.send({ type: 'START', weights });
         this.start(weights);
     }
 };
 
+/** 5. NETWORKING **/
 const net = {
     peer: null, conn: null, isHost: false,
     init() {
         this.peer = new Peer();
         this.peer.on('open', id => document.getElementById('my-id-display').innerText = id);
         this.peer.on('connection', c => {
-            if(this.conn) return;
-            this.conn = c; this.isHost = true;
-            this.setup();
-            ui.showWaiting(true);
+            if(this.conn) return; this.conn = c; this.isHost = true;
+            this.setup(); ui.showWaiting(true);
         });
     },
     join() {
-        const id = document.getElementById('peer-input').value.trim();
-        if(!id) return;
-        this.conn = this.peer.connect(id);
-        this.isHost = false;
-        this.setup();
+        const id = document.getElementById('peer-input').value.trim(); if(!id) return;
+        this.conn = this.peer.connect(id); this.isHost = false; this.setup();
     },
     setup() {
         this.conn.on('open', () => {
@@ -370,7 +381,7 @@ const net = {
             document.getElementById('client-text').innerText = "ĐÃ KẾT NỐI";
         });
         this.conn.on('data', data => {
-            if (data.type === 'SYNC') { game.myIdx = 1; game.start(data.weights); }
+            if (data.type === 'START') { game.myIdx = 1; game.start(data.weights); }
             if (data.type === 'MOVE') game.applyMove(data);
             if (data.type === 'SKIP') game.applySkip(data);
         });
@@ -378,51 +389,96 @@ const net = {
     send(d) { if (this.conn && this.conn.open) this.conn.send(d); }
 };
 
+/** 6. UI MANAGER **/
 const ui = {
+    async animateDealing() {
+        const deck = document.getElementById('dealing-deck');
+        deck.classList.remove('hidden');
+        const board = document.getElementById('game-board');
+        
+        for (let i = 0; i < 52; i++) {
+            const card = document.createElement('div');
+            card.className = 'card bg-slate-200 border-2 border-slate-400';
+            board.appendChild(card);
+            
+            const playerPos = i % 4;
+            const delay = i * 40;
+            
+            setTimeout(() => {
+                sfx.deal();
+                card.style.opacity = "1";
+                card.style.scale = "0.5";
+                
+                // Animating to player positions
+                if (playerPos === 0) card.style.transform = "translate(-50%, 300%) rotate(0deg)"; // Bottom
+                else if (playerPos === 1) card.style.transform = "translate(-300%, -50%) rotate(90deg)"; // Left
+                else if (playerPos === 2) card.style.transform = "translate(-50%, -400%) rotate(180deg)"; // Top
+                else if (playerPos === 3) card.style.transform = "translate(200%, -50%) rotate(-90deg)"; // Right
+            }, delay);
+        }
+        
+        return new Promise(res => setTimeout(() => {
+            deck.classList.add('hidden');
+            document.querySelectorAll('.poker-table > .card:not(.on-table):not(.in-hand)').forEach(n => n.remove());
+            res();
+        }, 52 * 40 + 500));
+    },
+
     toast(t) {
         const el = document.getElementById('toast'); el.innerText = t;
         el.style.opacity = "1"; el.style.transform = "translate(-50%, -50%) scale(1.1)";
         setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translate(-50%, -50%) scale(0.5)"; }, 2000);
     },
+
     copyID() {
         const id = document.getElementById('my-id-display').innerText;
-        navigator.clipboard.writeText(id).then(() => {
-            const btn = document.getElementById('copy-btn');
-            btn.classList.add('bg-emerald-600');
-            setTimeout(() => btn.classList.remove('bg-emerald-600'), 1000);
-            this.toast("ĐÃ COPY!");
-        });
+        const textArea = document.createElement("textarea");
+        textArea.value = id;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            this.toast("ĐÃ SAO CHÉP!");
+            sfx.click();
+        } catch (err) {
+            console.error('Fallback copy failed', err);
+        }
+        document.body.removeChild(textArea);
     },
+
     renderField(cards) {
         const f = document.getElementById('table-field'); f.innerHTML = '';
         cards.forEach(c => {
             const el = document.createElement('div');
-            el.className = `card ${c.c} scale-90 rotate-${Math.floor(Math.random()*20-10)}`;
+            el.className = `card on-table ${c.c} rotate-${Math.floor(Math.random()*20-10)}`;
             el.innerHTML = `<span class="text-xl font-black">${c.n}</span><span class="text-2xl">${c.i}</span>`;
             f.appendChild(el);
         });
     },
+
     showWaiting(h) {
         document.getElementById('lobby-home').classList.add('hidden');
         document.getElementById('lobby-waiting').classList.remove('hidden');
         if (h) document.getElementById('host-btn-area').classList.remove('hidden');
         else document.getElementById('client-msg').classList.remove('hidden');
     },
+
     hideLobby() {
-        document.getElementById('ui-lobby').classList.add('hidden');
-        document.getElementById('game-board').classList.remove('hidden');
-        document.getElementById('bgm').play().catch(()=>{});
+        document.getElementById('ui-lobby').style.transform = "translateY(-100%)";
+        setTimeout(() => {
+            document.getElementById('ui-lobby').classList.add('hidden');
+            document.getElementById('game-board').classList.remove('hidden');
+            document.getElementById('bgm').play().catch(()=>{});
+        }, 500);
     }
 };
 
 const actions = {
     startSolo() {
-        sfx.init();
-        game.myIdx = 0;
+        sfx.init(); game.myIdx = 0;
         const d = Array.from({length: 52}, (_, i) => i).sort(() => Math.random() - 0.5);
         game.start([d.slice(0,13), d.slice(13,26), d.slice(26,39), d.slice(39,52)]);
-    },
-    joinRoom() { sfx.init(); net.join(); }
+    }
 };
 
 net.init();
