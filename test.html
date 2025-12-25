@@ -3,121 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tiến Lên Miền Nam - Ultimate P2P</title>
+    <title>Tiến Lên Miền Nam - Stable P2P</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Quicksand', sans-serif; background: #020617; overflow: hidden; touch-action: manipulation; }
-        .poker-table { background: radial-gradient(circle, #1a4731 0%, #061a12 100%); border: 8px solid #3d1a04; box-shadow: inset 0 0 150px rgba(0,0,0,0.9); }
+        body { font-family: 'Quicksand', sans-serif; background: #010409; overflow: hidden; touch-action: manipulation; }
+        .poker-table { background: radial-gradient(circle, #1a4731 0%, #061a12 100%); border: 8px solid #3d1a04; box-shadow: inset 0 0 150px rgba(0,0,0,1); }
         .card {
             width: 55px; height: 82px; background: white; border-radius: 8px;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; flex-direction: column; padding: 5px; font-weight: 900;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6); display: flex; flex-direction: column; padding: 5px; font-weight: 900;
         }
         @media (min-width: 768px) { .card { width: 90px; height: 130px; padding: 10px; } }
-        .card.selected { transform: translateY(-35px) scale(1.05); border: 3px solid #facc15; z-index: 50; box-shadow: 0 10px 20px rgba(250,204,21,0.4); }
+        .card.selected { transform: translateY(-35px) scale(1.05); border: 3px solid #facc15; z-index: 50; box-shadow: 0 10px 25px rgba(250,204,21,0.5); }
         .card-red { color: #e11d48; }
         .card-black { color: #1e293b; }
-        .turn-active { border: 4px solid #facc15; box-shadow: 0 0 25px #facc15; animation: pulse 1.5s infinite; }
+        .turn-active { border: 4px solid #facc15; box-shadow: 0 0 30px #facc15; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        .lobby-panel { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); }
-        #toast { text-shadow: 0 0 10px rgba(0,0,0,0.8); pointer-events: none; z-index: 2000; }
+        #toast { text-shadow: 0 0 10px rgba(0,0,0,1); pointer-events: none; z-index: 9999; }
+        .lobby-panel { background: rgba(13, 17, 23, 0.98); backdrop-filter: blur(20px); }
     </style>
 </head>
 <body class="flex items-center justify-center h-screen w-screen text-white select-none">
 
-<!-- LOBBY & WAITING ROOM -->
+<!-- TRÌNH QUẢN LÝ PHÒNG -->
 <div id="ui-lobby" class="fixed inset-0 z-[1000] lobby-panel flex flex-col items-center justify-center p-6 text-center">
     <div id="lobby-home" class="w-full max-w-sm">
         <h1 class="text-6xl font-black text-yellow-500 italic mb-2 tracking-tighter" style="font-family: 'Montserrat'">TIẾN LÊN</h1>
-        <p class="text-slate-500 text-[10px] tracking-[0.4em] mb-12 uppercase">Professional Multiplayer</p>
+        <p class="text-slate-500 text-[10px] tracking-[0.4em] mb-12 uppercase">Advanced Sync System</p>
         
         <div class="space-y-4">
-            <button onclick="app.startSolo()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-xl shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition-all">CHƠI VỚI BOT</button>
+            <button onclick="app.startSolo()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-xl shadow-lg border-b-4 border-emerald-900 active:border-b-0 active:translate-y-1 transition-all">CHƠI VỚI BOT (OFFLINE)</button>
             
-            <div class="py-4 flex items-center gap-2"><div class="h-px bg-slate-800 flex-1"></div><span class="text-slate-600 text-[10px]">KẾT NỐI ONLINE</span><div class="h-px bg-slate-800 flex-1"></div></div>
+            <div class="py-4 flex items-center gap-2"><div class="h-px bg-slate-800 flex-1"></div><span class="text-slate-600 text-[10px]">CHƠI ONLINE</span><div class="h-px bg-slate-800 flex-1"></div></div>
             
-            <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
-                <p class="text-[10px] text-slate-500 uppercase mb-2 tracking-widest">Mã Phòng Của Bạn</p>
-                <div class="flex items-center gap-2 bg-black/40 p-1 rounded-xl">
-                    <div id="my-peer-id" class="flex-1 py-2 font-mono font-bold text-yellow-400 text-sm italic overflow-hidden text-ellipsis">Đang lấy mã...</div>
-                    <button onclick="ui.copyID()" class="bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-all shadow-lg active:scale-90" title="Copy ID">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                        </svg>
+            <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+                <p class="text-[10px] text-slate-500 uppercase mb-2">ID Phòng Của Bạn</p>
+                <div class="flex items-center gap-2 bg-black/50 p-1 rounded-xl">
+                    <div id="my-id" class="flex-1 py-2 font-mono font-bold text-yellow-500 text-sm italic overflow-hidden text-ellipsis">Đang lấy...</div>
+                    <button onclick="ui.copyID()" class="bg-slate-700 hover:bg-slate-600 p-2 rounded-lg transition-all active:scale-90">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
                     </button>
                 </div>
             </div>
 
             <div class="flex flex-col gap-2">
-                <input id="input-peer-id" type="text" placeholder="Dán mã phòng bạn bè..." class="w-full px-5 py-4 bg-slate-700/50 rounded-2xl border border-slate-600 outline-none focus:ring-2 ring-blue-500 text-white font-mono text-center">
-                <button onclick="net.join()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">VÀO PHÒNG</button>
+                <input id="peer-input" type="text" placeholder="Dán mã phòng bạn bè..." class="w-full px-5 py-4 bg-slate-800 rounded-2xl border border-slate-700 outline-none focus:ring-2 ring-blue-500 text-white font-mono text-center">
+                <button onclick="net.join()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg border-b-4 border-blue-900 active:border-b-0 active:translate-y-1">VÀO PHÒNG</button>
             </div>
         </div>
     </div>
 
-    <!-- WAITING ROOM -->
+    <!-- MÀN HÌNH CHỜ (WAITING ROOM) -->
     <div id="lobby-waiting" class="hidden w-full max-w-sm">
         <h2 class="text-3xl font-black text-yellow-500 italic mb-8 uppercase">Phòng Chờ</h2>
         <div class="grid grid-cols-2 gap-4 mb-10">
-            <div class="bg-slate-800 p-6 rounded-3xl border-2 border-emerald-500 shadow-2xl relative">
-                <div class="text-3xl mb-2">👑</div>
-                <div class="text-[10px] text-emerald-400 font-bold uppercase">Chủ Phòng</div>
+            <div class="bg-slate-900 p-6 rounded-3xl border-2 border-emerald-500 shadow-2xl">
+                <div class="text-4xl mb-2">👑</div>
+                <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Chủ Phòng</div>
             </div>
-            <div id="slot-client" class="bg-slate-800/40 p-6 rounded-3xl border-2 border-dashed border-slate-700 flex flex-col items-center justify-center transition-all">
-                <div id="client-icon" class="text-3xl mb-2 opacity-20">👤</div>
+            <div id="slot-client" class="bg-slate-900/50 p-6 rounded-3xl border-2 border-dashed border-slate-800 flex flex-col items-center justify-center transition-all">
+                <div id="client-icon" class="text-4xl mb-2 opacity-20">👤</div>
                 <div id="client-text" class="text-[10px] text-slate-500 font-bold uppercase">Chờ khách...</div>
             </div>
         </div>
-        <div id="host-controls" class="hidden">
-            <button onclick="game.hostStart()" class="w-full py-5 bg-yellow-500 text-black rounded-full font-black text-2xl shadow-2xl animate-pulse">BẮT ĐẦU VÀ CHIA BÀI</button>
+        <div id="host-btn-area" class="hidden">
+            <button onclick="game.hostRequestStart()" class="w-full py-5 bg-yellow-500 text-black rounded-full font-black text-2xl shadow-2xl animate-pulse">BẮT ĐẦU VÀ CHIA BÀI</button>
         </div>
-        <div id="client-msg" class="hidden text-blue-400 font-bold animate-pulse text-sm">CHỜ CHỦ PHÒNG BẮT ĐẦU...</div>
+        <div id="client-msg" class="hidden text-blue-400 font-bold animate-pulse">ĐANG ĐỢI CHỦ PHÒNG BẮT ĐẦU...</div>
     </div>
 </div>
 
-<!-- GAME TABLE -->
+<!-- BÀN CHƠI GAME -->
 <div id="game-board" class="fixed inset-0 poker-table hidden flex flex-col justify-between p-4 overflow-hidden">
-    <!-- Player Top -->
+    <!-- Đối thủ Top -->
     <div id="player-2" class="flex flex-col items-center">
-        <div class="av-box w-14 h-14 md:w-20 md:h-20 bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent">🤖</div>
-        <div class="bg-black/40 px-3 py-1 rounded-full text-[10px] mt-1 font-bold tracking-tighter">BOT 2 (<span id="count-2">13</span>)</div>
+        <div class="av-box w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent">🤖</div>
+        <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold">BOT 2 (<span id="count-2">13</span>)</div>
     </div>
 
-    <!-- Middle Field -->
+    <!-- Khu vực giữa -->
     <div class="flex justify-between items-center w-full px-2 md:px-20">
         <div id="player-1" class="flex flex-col items-center">
-            <div class="av-box w-14 h-14 md:w-20 md:h-20 bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent">👤</div>
-            <div class="bg-black/40 px-3 py-1 rounded-full text-[10px] mt-1 font-bold">P1 (<span id="count-1">13</span>)</div>
+            <div class="av-box w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent">👤</div>
+            <div class="bg-black/60 px-3 py-1 rounded-full text-[10px] mt-1 font-bold">P1 (<span id="count-1">13</span>)</div>
         </div>
         
-        <div id="table-field" class="flex-1 h-40 flex items-center justify-center -space-x-10 md:-space-x-16"></div>
+        <div id="table-center" class="flex-1 h-48 flex items-center justify-center -space-x-10 md:-space-x-16"></div>
 
         <div id="player-3" class="flex flex-col items-center">
-            <div class="av-box w-14 h-14 md:w-20 md:h-20 bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent">🤖</div>
+            <div class="av-box w-14 h-14 md:w-20 md:h-20 bg-slate-900 rounded-full flex items-center justify-center text-3xl shadow-2xl border-4 border-transparent">🤖</div>
             <div class="bg-black/40 px-3 py-1 rounded-full text-[10px] mt-1 font-bold">BOT 3 (<span id="count-3">13</span>)</div>
         </div>
     </div>
 
-    <!-- My Hand -->
-    <div class="flex flex-col items-center">
-        <div id="hand-display" class="flex justify-center -space-x-8 md:-space-x-12 mb-20 md:mb-28 h-24 transition-all"></div>
+    <!-- Bài của mình -->
+    <div class="flex flex-col items-center pb-4">
+        <div id="hand-display" class="flex justify-center -space-x-8 md:-space-x-12 mb-20 md:mb-28 h-24"></div>
         <div class="fixed bottom-6 flex gap-4 md:gap-8 scale-90 md:scale-100">
-            <button onclick="game.handleSkip()" class="px-8 py-3 bg-slate-800 rounded-full font-bold border-b-4 border-black uppercase text-xs">Bỏ qua</button>
+            <button onclick="game.handleSkip()" class="px-8 py-3 bg-slate-900/80 rounded-full font-bold border-b-4 border-black uppercase text-xs">Bỏ lượt</button>
             <button onclick="game.handlePlay()" class="px-12 py-3 bg-yellow-500 text-black rounded-full font-black text-xl border-b-4 border-yellow-700 uppercase shadow-2xl">Đánh bài</button>
-            <button onclick="game.sortHand()" class="px-8 py-3 bg-blue-600 rounded-full font-bold border-b-4 border-blue-900 uppercase text-xs">Xếp bài</button>
+            <button onclick="game.sortHand()" class="px-8 py-3 bg-blue-600 rounded-full font-bold border-b-4 border-blue-950 uppercase text-xs">Xếp bài</button>
         </div>
     </div>
 
-    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl md:text-7xl font-black text-yellow-400 italic uppercase opacity-0 pointer-events-none transition-all duration-300 z-[2000] text-center"></div>
+    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl md:text-7xl font-black text-yellow-400 italic uppercase opacity-0 transition-all duration-300 text-center"></div>
 </div>
 
-<!-- Background Music -->
 <audio id="bgm" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3" type="audio/mpeg"></audio>
 
 <script>
-/** 1. AUDIO & SFX **/
+/** 1. AUDIO & SOUNDS **/
 const sfx = {
     ctx: new (window.AudioContext || window.webkitAudioContext)(),
     play(f, t, d, v=0.1) {
@@ -129,12 +126,11 @@ const sfx = {
         o.start(); o.stop(this.ctx.currentTime + d);
     },
     click() { this.play(500, 'sine', 0.1); },
-    deal() { this.play(800, 'square', 0.05, 0.05); },
     chop() { this.play(150, 'sawtooth', 0.3, 0.2); },
     win() { [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => this.play(f, 'triangle', 0.5), i*150)); }
 };
 
-/** 2. RULES ENGINE **/
+/** 2. LUẬT CHƠI (RULE ENGINE) **/
 const RANKS = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
 const SUITS = ['♠', '♣', '♦', '♥'];
 const COLORS = ['card-black', 'card-black', 'card-red', 'card-red'];
@@ -170,7 +166,6 @@ const Rule = {
 
         if (c.type === lastM.type && (c.len || 0) === (lastM.len || 0)) return c.p > lastM.p;
         
-        // Chặt Heo
         if (lastM.type === 'single' && lastM.p >= 48) {
             if (c.type === 'quad' || (c.type === 'series' && c.len >= 3)) return true;
         }
@@ -190,19 +185,13 @@ const Rule = {
     }
 };
 
-/** 3. GAME STATE **/
+/** 3. GAME ENGINE **/
 const game = {
     hands: [[],[],[],[]], turn: 0, lastM: null, skipped: [false,false,false,false],
     myIdx: 0, selectedIds: new Set(), isFirst: true,
 
     init(deck) {
-        if (!deck) {
-            const d = [];
-            for(let r=0; r<13; r++) for(let s=0; s<4; s++) d.push({r, s, w: r*4+s, n: RANKS[r], i: SUITS[s], c: COLORS[s], id: `${r}-${s}`});
-            d.sort(() => Math.random() - 0.5);
-            this.hands = [0,1,2,3].map(i => d.slice(i*13, (i+1)*13).sort((a,b)=>a.w - b.w));
-        } else { this.hands = deck; }
-        
+        this.hands = deck;
         this.turn = this.findStart();
         this.isFirst = true;
         this.checkToiTrang();
@@ -322,15 +311,31 @@ const game = {
     },
 
     sortHand() { this.hands[this.myIdx].sort((a,b)=>a.w-b.w); this.render(); },
-    hostStart() { this.init(); net.send({ type: 'START', hands: this.hands }); }
+
+    // HOST: Khi bấm "Bắt đầu", báo Client sẵn sàng trước
+    hostRequestStart() {
+        net.send({ type: 'PRE_START_SIGNAL' });
+    },
+
+    // Sau khi Client báo READY, Host mới xáo và chia bài
+    hostPerformDeal() {
+        const d = [];
+        for(let r=0; r<13; r++) for(let s=0; s<4; s++) d.push({r, s, w: r*4+s, n: RANKS[r], i: SUITS[s], c: COLORS[s], id: `${r}-${s}`});
+        d.sort(() => Math.random() - 0.5);
+        const dealtHands = [0,1,2,3].map(i => d.slice(i*13, (i+1)*13).sort((a,b)=>a.w - b.w));
+        
+        this.hands = dealtHands;
+        net.send({ type: 'SYNC_HANDS', hands: dealtHands });
+        this.init(dealtHands);
+    }
 };
 
-/** 4. NETWORKING **/
+/** 4. NETWORKING (SYNC ENGINE) **/
 const net = {
     peer: null, conn: null, isHost: false,
     init() {
         this.peer = new Peer();
-        this.peer.on('open', id => document.getElementById('my-peer-id').innerText = id);
+        this.peer.on('open', id => document.getElementById('my-id').innerText = id);
         this.peer.on('connection', c => {
             if (this.conn) return; 
             this.conn = c; this.isHost = true;
@@ -339,8 +344,8 @@ const net = {
         });
     },
     join() {
-        const id = document.getElementById('input-peer-id').value.trim();
-        if (!id) return ui.toast("NHẬP MÃ PHÒNG!");
+        const id = document.getElementById('peer-input').value.trim();
+        if (!id) return;
         this.conn = this.peer.connect(id);
         this.isHost = false;
         this.setupListeners();
@@ -348,12 +353,30 @@ const net = {
     setupListeners() {
         this.conn.on('open', () => {
             ui.showWaiting(this.isHost);
-            document.getElementById('slot-client').classList.replace('border-slate-700', 'border-emerald-500');
+            document.getElementById('slot-client').classList.replace('border-slate-800', 'border-emerald-500');
             document.getElementById('client-icon').style.opacity = "1";
-            document.getElementById('client-text').innerText = "ĐÃ VÀO PHÒNG";
+            document.getElementById('client-text').innerText = "ĐÃ KẾT NỐI";
         });
         this.conn.on('data', data => {
-            if (data.type === 'START') { game.myIdx = 1; game.init(data.hands); }
+            console.log("Data nhận:", data.type);
+            
+            // Client: Nhận tín hiệu chuẩn bị
+            if (data.type === 'PRE_START_SIGNAL') {
+                ui.hideLobby(); // Chuyển sang màn hình game trước
+                this.send({ type: 'CLIENT_READY' }); // Báo Host chia bài
+            }
+            
+            // Host: Nhận báo cáo Client đã sẵn sàng
+            if (data.type === 'CLIENT_READY' && this.isHost) {
+                game.hostPerformDeal();
+            }
+
+            // Client: Nhận dữ liệu bài thực tế
+            if (data.type === 'SYNC_HANDS') {
+                game.myIdx = 1;
+                game.init(data.hands);
+            }
+            
             if (data.type === 'MOVE') game.applyMove(data);
             if (data.type === 'SKIP') game.applySkip(data);
         });
@@ -361,15 +384,12 @@ const net = {
     send(d) { if (this.conn && this.conn.open) this.conn.send(d); }
 };
 
-/** 5. UI & UX **/
+/** 5. UI/UX **/
 const ui = {
     copyID() {
-        const id = document.getElementById('my-peer-id').innerText;
+        const id = document.getElementById('my-id').innerText;
         if (id.includes('...')) return;
-        navigator.clipboard.writeText(id).then(() => {
-            this.toast("ĐÃ SAO CHÉP MÃ PHÒNG!");
-            sfx.click();
-        });
+        navigator.clipboard.writeText(id).then(() => this.toast("ĐÃ COPY!"));
     },
     render() {
         const div = document.getElementById('hand-display');
@@ -393,7 +413,7 @@ const ui = {
         });
     },
     renderField(cards) {
-        const f = document.getElementById('table-field'); f.innerHTML = '';
+        const f = document.getElementById('table-center'); f.innerHTML = '';
         cards.forEach(c => {
             const el = document.createElement('div');
             el.className = `card ${c.c} scale-90 rotate-${Math.floor(Math.random()*20-10)}`;
@@ -409,17 +429,26 @@ const ui = {
     showWaiting(h) {
         document.getElementById('lobby-home').classList.add('hidden');
         document.getElementById('lobby-waiting').classList.remove('hidden');
-        if (h) document.getElementById('host-controls').classList.remove('hidden');
+        if (h) document.getElementById('host-btn-area').classList.remove('hidden');
         else document.getElementById('client-msg').classList.remove('hidden');
     },
     hideLobby() { 
         document.getElementById('ui-lobby').classList.add('hidden');
         document.getElementById('game-board').classList.remove('hidden');
-        document.getElementById('bgm').play().catch(() => {});
+        document.getElementById('bgm').play().catch(()=>{});
     }
 };
 
-const app = { startSolo() { sfx.ctx.resume(); game.myIdx = 0; game.init(); } };
+const app = { 
+    startSolo() { 
+        sfx.ctx.resume(); 
+        game.myIdx = 0; 
+        const d = [];
+        for(let r=0; r<13; r++) for(let s=0; s<4; s++) d.push({r, s, w: r*4+s, n: RANKS[r], i: SUITS[s], c: COLORS[s], id: `${r}-${s}`});
+        d.sort(() => Math.random() - 0.5);
+        game.init([0,1,2,3].map(i => d.slice(i*13, (i+1)*13).sort((a,b)=>a.w - b.w)));
+    } 
+};
 net.init();
 </script>
 </body>
