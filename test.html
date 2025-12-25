@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tiến Lên Miền Nam - Final Stable</title>
+    <title>Tiến Lên Miền Nam - Final Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Quicksand:wght@700&display=swap" rel="stylesheet">
@@ -88,7 +88,7 @@
     <div class="flex flex-col items-center pb-4">
         <div id="hand-display" class="flex justify-center -space-x-8 md:-space-x-12 mb-20 md:mb-28 h-24"></div>
         <div id="game-controls" class="fixed bottom-6 flex gap-2 md:gap-4 opacity-0 pointer-events-none transition-all duration-300">
-            <button onclick="game.handleSkip()" class="px-4 py-3 bg-slate-900 rounded-xl font-bold border-b-4 border-black uppercase text-[10px]">Bỏ qua</button>
+            <button id="btn-skip" onclick="game.handleSkip()" class="px-4 py-3 bg-slate-900 rounded-xl font-bold border-b-4 border-black uppercase text-[10px]">Bỏ qua</button>
             <button onclick="game.getHint()" class="px-4 py-3 bg-emerald-600 text-white rounded-xl font-bold border-b-4 border-emerald-900 uppercase text-[10px]">Gợi ý</button>
             <button onclick="game.handlePlay()" class="px-8 py-3 bg-yellow-500 text-black rounded-xl font-black text-lg border-b-4 border-yellow-700 uppercase shadow-2xl">Đánh</button>
             <button onclick="game.sortHand()" class="px-4 py-3 bg-blue-600 rounded-xl font-bold border-b-4 border-blue-900 uppercase text-[10px]">Xếp</button>
@@ -187,7 +187,7 @@ const game = {
         this.turn = this.findStart();
         this.lastM = null; this.skipped = [false,false,false,false]; this.isFirst = true;
         ui.hideLobby(); this.render();
-        if (this.turn !== this.myIdx && net.isHost) setTimeout(() => this.botPlay(), 1500);
+        this.triggerNextTurnLogic();
     },
 
     findStart() {
@@ -215,7 +215,6 @@ const game = {
                 move = validMoves.find(m => m.combo.type === 'straight' && m.combo.len >= 4) || 
                        validMoves.find(m => m.combo.type === 'triple') || move;
             }
-            // Fix freeze: check move exists before access
             if (move && move.combo && this.lastM && move.combo.p >= 48 && this.lastM.p < 32 && this.hands[this.turn].length > 4) {
                 this.forceSkip();
             } else if (move) {
@@ -252,8 +251,20 @@ const game = {
             document.getElementById(`avatar-${i}`).innerText = isOpp ? '👤' : '🤖';
             document.getElementById(`avatar-${i}`).classList.toggle('turn-active', this.turn === realIdx);
         }
-        document.getElementById('game-controls').style.opacity = this.turn === this.myIdx ? "1" : "0.5";
-        document.getElementById('game-controls').style.pointerEvents = this.turn === this.myIdx ? "auto" : "none";
+        
+        const isMyTurn = this.turn === this.myIdx;
+        document.getElementById('game-controls').style.opacity = isMyTurn ? "1" : "0.5";
+        document.getElementById('game-controls').style.pointerEvents = isMyTurn ? "auto" : "none";
+        
+        // Khóa nút bỏ qua nếu mình bắt đầu vòng mới
+        const btnSkip = document.getElementById('btn-skip');
+        if (!this.lastM) {
+            btnSkip.style.opacity = "0.3";
+            btnSkip.style.pointerEvents = "none";
+        } else {
+            btnSkip.style.opacity = "1";
+            btnSkip.style.pointerEvents = "auto";
+        }
     },
 
     handlePlay() {
@@ -271,36 +282,67 @@ const game = {
         this.lastM = combo; this.isFirst = false;
         this.skipped = [false, false, false, false];
         ui.renderField(weights.map(w => weightToCard(w)));
-        this.next(p);
+        this.next();
     },
 
     applySkip(data) {
         this.skipped[data.p] = true;
         ui.toast(`P${data.p} BỎ LƯỢT`);
-        this.next(data.p);
+        this.next();
     },
 
     handleSkip() {
         if (this.turn === this.myIdx && this.lastM) this.forceSkip();
     },
 
-    next(curr) {
-        if (this.hands[curr].length === 0) {
-            ui.toast(`P${curr} THẮNG!`);
-            setTimeout(() => location.reload(), 5000); return;
+    next() {
+        // Kiểm tra thắng
+        for(let i=0; i<4; i++) {
+            if (this.hands[i].length === 0) {
+                ui.toast(`P${i} THẮNG!`);
+                setTimeout(() => location.reload(), 5000); return;
+            }
         }
+
+        // Tăng lượt
         this.turn = (this.turn + 1) % 4;
-        const active = this.skipped.filter(s => !s).length;
-        if (active === 1 && !this.skipped[this.turn]) {
-            this.skipped = [false, false, false, false];
-            this.lastM = null;
-            ui.toast("VÒNG MỚI");
-        } else if (this.skipped[this.turn]) {
-            setTimeout(() => this.next(this.turn), 50); return;
+
+        // Đếm số người chưa bỏ lượt
+        const activeCount = this.skipped.filter(s => !s).length;
+
+        // TRƯỜNG HỢP: Chỉ còn 1 người duy nhất chưa bỏ lượt
+        if (activeCount === 1) {
+            const lastActiveIdx = this.skipped.findIndex(s => !s);
+            if (this.turn === lastActiveIdx) {
+                // Người cuối cùng được đánh, reset vòng mới
+                this.lastM = null;
+                this.skipped = [false, false, false, false];
+                ui.toast("VÒNG MỚI");
+                this.render();
+                this.triggerNextTurnLogic();
+                return;
+            } else {
+                // Nếu lượt đang ở người đã bỏ qua, nhảy thẳng tới người cuối cùng
+                this.next();
+                return;
+            }
         }
+
+        // TRƯỜNG HỢP: Lượt hiện tại trúng người đã bỏ lượt
+        if (this.skipped[this.turn]) {
+            this.next();
+            return;
+        }
+
         this.render();
+        this.triggerNextTurnLogic();
+    },
+
+    triggerNextTurnLogic() {
         if (net.isHost && this.turn !== this.myIdx) {
-            if (!(net.conn && this.turn === 1)) setTimeout(() => this.botPlay(), 1200);
+            if (!(net.conn && this.turn === 1)) {
+                setTimeout(() => this.botPlay(), 1200);
+            }
         }
     },
 
