@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tiến Lên Miền Nam - Pro</title>
+    <title>Tiến Lên Miền Nam - AI & Hint Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Quicksand:wght@700&display=swap" rel="stylesheet">
@@ -135,7 +135,7 @@ const Rule = {
         return false;
     },
 
-    findAllValidMoves(hand, lastM) {
+    findAllValidMoves(hand, lastM, isFirst) {
         let results = [];
         const findSubsets = (size) => {
             let subsets = [];
@@ -152,7 +152,14 @@ const Rule = {
             for (let s = Math.min(hand.length, 12); s >= 1; s--) {
                 findSubsets(s).forEach(subset => {
                     const combo = this.getCombo(subset);
-                    if (combo) results.push({ cards: subset, combo });
+                    if (combo) {
+                        // FIX: Nếu là lượt đầu (isFirst), bộ bài PHẢI chứa 3 bích (w=0)
+                        if (isFirst) {
+                            if (subset.some(card => card.w === 0)) results.push({ cards: subset, combo });
+                        } else {
+                            results.push({ cards: subset, combo });
+                        }
+                    }
                 });
             }
         } else {
@@ -192,7 +199,7 @@ const game = {
 
     getHint() {
         if (this.turn !== this.myIdx) return;
-        const validMoves = Rule.findAllValidMoves(this.hands[this.myIdx], this.lastM);
+        const validMoves = Rule.findAllValidMoves(this.hands[this.myIdx], this.lastM, this.isFirst);
         if (validMoves.length > 0) {
             this.selectedIds.clear();
             validMoves[0].cards.forEach(c => this.selectedIds.add(c.id));
@@ -202,12 +209,14 @@ const game = {
     },
 
     botPlay() {
-        const validMoves = Rule.findAllValidMoves(this.hands[this.turn], this.lastM);
+        const validMoves = Rule.findAllValidMoves(this.hands[this.turn], this.lastM, this.isFirst);
         if (validMoves.length > 0) {
             let move = validMoves[0];
             if (!this.lastM) {
-                move = validMoves.find(m => m.combo.type === 'straight' && m.combo.len >= 4) || 
-                       validMoves.find(m => m.combo.type === 'triple') || move;
+                if (!this.isFirst) {
+                    move = validMoves.find(m => m.combo.type === 'straight' && m.combo.len >= 4) || 
+                           validMoves.find(m => m.combo.type === 'triple') || move;
+                }
             }
             if (this.lastM && move.combo.p >= 48 && this.lastM.p < 32 && this.hands[this.turn].length > 4) {
                 this.applySkip({ p: this.turn }); net.send({ type: 'SKIP', p: this.turn });
