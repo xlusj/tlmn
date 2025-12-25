@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tiến Lên Miền Nam - AI & Hint Pro</title>
+    <title>Tiến Lên Miền Nam - Final Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Quicksand:wght@700&display=swap" rel="stylesheet">
@@ -52,7 +52,7 @@
         </div>
 
         <div class="flex flex-col gap-2">
-            <input id="peer-input" type="text" placeholder="Dán mã phòng bạn bè..." class="w-full px-5 py-4 bg-slate-800 rounded-2xl border border-slate-700 outline-none text-white font-mono text-center">
+            <input id="peer-input" type="text" placeholder="Dán mã phòng..." class="w-full px-5 py-4 bg-slate-800 rounded-2xl border border-slate-700 outline-none text-white font-mono text-center">
             <button onclick="actions.joinRoom()" class="w-full bg-blue-600 py-4 rounded-2xl font-bold text-lg border-b-4 border-blue-900">Vào phòng Online</button>
         </div>
     </div>
@@ -62,7 +62,7 @@
         <div id="host-btn-area" class="hidden">
             <button onclick="game.hostInitiate()" class="w-full py-5 bg-yellow-500 text-black rounded-full font-black text-2xl animate-pulse">BẮT ĐẦU CHIA BÀI</button>
         </div>
-        <p id="client-msg" class="hidden text-blue-400 font-bold animate-pulse">ĐANG ĐỢI CHỦ PHÒNG BẮT ĐẦU...</p>
+        <p id="client-msg" class="hidden text-blue-400 font-bold animate-pulse">ĐANG ĐỢI CHỦ PHÒNG...</p>
     </div>
 </div>
 
@@ -100,7 +100,7 @@
 <audio id="bgm" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3" type="audio/mpeg"></audio>
 
 <script>
-/** 1. LOGIC & AI CORE **/
+/** 1. LOGIC CORE **/
 const RANKS = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
 const SUITS = ['♠', '♣', '♦', '♥'];
 const COLORS = ['card-black', 'card-black', 'card-red', 'card-red'];
@@ -131,7 +131,7 @@ const Rule = {
         if (isFirst) return newCards.some(card => card.w === 0);
         if (!lastM) return true;
         if (c.type === lastM.type && (c.len || 0) === (lastM.len || 0)) return c.p > lastM.p;
-        if (lastM.type === 'single' && lastM.p >= 48 && c.type === 'quad') return true;
+        if (lastM.p >= 48 && (lastM.type === 'single' || lastM.type === 'pair') && c.type === 'quad') return true;
         return false;
     },
 
@@ -139,6 +139,7 @@ const Rule = {
         let results = [];
         const findSubsets = (size) => {
             let subsets = [];
+            if (size > hand.length) return subsets;
             const helper = (start, current) => {
                 if (current.length === size) { subsets.push([...current]); return; }
                 for (let i = start; i < hand.length; i++) {
@@ -153,12 +154,9 @@ const Rule = {
                 findSubsets(s).forEach(subset => {
                     const combo = this.getCombo(subset);
                     if (combo) {
-                        // FIX: Nếu là lượt đầu (isFirst), bộ bài PHẢI chứa 3 bích (w=0)
                         if (isFirst) {
                             if (subset.some(card => card.w === 0)) results.push({ cards: subset, combo });
-                        } else {
-                            results.push({ cards: subset, combo });
-                        }
+                        } else results.push({ cards: subset, combo });
                     }
                 });
             }
@@ -167,7 +165,7 @@ const Rule = {
             findSubsets(targetSize).forEach(subset => {
                 if (this.canBeat(subset, lastM, false)) results.push({ cards: subset, combo: this.getCombo(subset) });
             });
-            if (lastM.type === 'single' && lastM.p >= 48) {
+            if (lastM.p >= 48 && (lastM.type === 'single' || lastM.type === 'pair')) {
                 findSubsets(4).forEach(subset => {
                     const c = this.getCombo(subset);
                     if (c && c.type === 'quad') results.push({ cards: subset, combo: c });
@@ -178,7 +176,7 @@ const Rule = {
     }
 };
 
-/** 2. GAME ENGINE **/
+/** 2. ENGINE **/
 const game = {
     hands: [[],[],[],[]], turn: 0, lastM: null, skipped: [false,false,false,false],
     myIdx: 0, selectedIds: new Set(), isFirst: true,
@@ -209,24 +207,27 @@ const game = {
     },
 
     botPlay() {
+        if (this.turn === this.myIdx) return;
         const validMoves = Rule.findAllValidMoves(this.hands[this.turn], this.lastM, this.isFirst);
         if (validMoves.length > 0) {
             let move = validMoves[0];
-            if (!this.lastM) {
-                if (!this.isFirst) {
-                    move = validMoves.find(m => m.combo.type === 'straight' && m.combo.len >= 4) || 
-                           validMoves.find(m => m.combo.type === 'triple') || move;
-                }
+            if (!this.lastM && !this.isFirst) {
+                move = validMoves.find(m => m.combo.type === 'straight' && m.combo.len >= 4) || 
+                       validMoves.find(m => m.combo.type === 'triple') || move;
             }
-            if (this.lastM && move.combo.p >= 48 && this.lastM.p < 32 && this.hands[this.turn].length > 4) {
-                this.applySkip({ p: this.turn }); net.send({ type: 'SKIP', p: this.turn });
-            } else {
+            // Fix freeze: check move exists before access
+            if (move && move.combo && this.lastM && move.combo.p >= 48 && this.lastM.p < 32 && this.hands[this.turn].length > 4) {
+                this.forceSkip();
+            } else if (move) {
                 const data = { type: 'MOVE', p: this.turn, weights: move.cards.map(c=>c.w), combo: move.combo };
                 this.applyMove(data); net.send(data);
-            }
-        } else {
-            this.applySkip({ p: this.turn }); net.send({ type: 'SKIP', p: this.turn });
-        }
+            } else this.forceSkip();
+        } else this.forceSkip();
+    },
+
+    forceSkip() {
+        this.applySkip({ p: this.turn });
+        net.send({ type: 'SKIP', p: this.turn });
     },
 
     render() {
@@ -246,9 +247,9 @@ const game = {
 
         for(let i=1; i<=3; i++) {
             const realIdx = (this.myIdx + i) % 4;
-            const isOpponent = net.conn && realIdx === (this.myIdx === 0 ? 1 : 0);
-            document.getElementById(`name-${i}`).innerText = `${isOpponent ? 'PLAYER' : 'BOT'} (${this.hands[realIdx].length})`;
-            document.getElementById(`avatar-${i}`).innerText = isOpponent ? '👤' : '🤖';
+            const isOpp = net.conn && realIdx === (this.myIdx === 0 ? 1 : 0);
+            document.getElementById(`name-${i}`).innerText = `${isOpp ? 'PLAYER' : 'BOT'} (${this.hands[realIdx].length})`;
+            document.getElementById(`avatar-${i}`).innerText = isOpp ? '👤' : '🤖';
             document.getElementById(`avatar-${i}`).classList.toggle('turn-active', this.turn === realIdx);
         }
         document.getElementById('game-controls').style.opacity = this.turn === this.myIdx ? "1" : "0.5";
@@ -268,6 +269,7 @@ const game = {
         const { p, weights, combo } = data;
         this.hands[p] = this.hands[p].filter(hc => !weights.includes(hc.w));
         this.lastM = combo; this.isFirst = false;
+        this.skipped = [false, false, false, false];
         ui.renderField(weights.map(w => weightToCard(w)));
         this.next(p);
     },
@@ -279,9 +281,7 @@ const game = {
     },
 
     handleSkip() {
-        if (this.turn !== this.myIdx || !this.lastM) return;
-        const data = { type: 'SKIP', p: this.myIdx };
-        this.applySkip(data); net.send(data);
+        if (this.turn === this.myIdx && this.lastM) this.forceSkip();
     },
 
     next(curr) {
@@ -292,15 +292,15 @@ const game = {
         this.turn = (this.turn + 1) % 4;
         const active = this.skipped.filter(s => !s).length;
         if (active === 1 && !this.skipped[this.turn]) {
-            this.skipped = [false,false,false,false]; this.lastM = null;
+            this.skipped = [false, false, false, false];
+            this.lastM = null;
             ui.toast("VÒNG MỚI");
         } else if (this.skipped[this.turn]) {
-            this.next(this.turn); return;
+            setTimeout(() => this.next(this.turn), 50); return;
         }
         this.render();
-        if (net.isHost) {
-            const isClient = net.conn && this.turn === 1;
-            if (this.turn !== 0 && !isClient) setTimeout(() => this.botPlay(), 1200);
+        if (net.isHost && this.turn !== this.myIdx) {
+            if (!(net.conn && this.turn === 1)) setTimeout(() => this.botPlay(), 1200);
         }
     },
 
@@ -313,15 +313,13 @@ const game = {
     sortHand() { this.hands[this.myIdx].sort((a,b)=>a.w-b.w); this.render(); }
 };
 
-/** 3. NETWORK & UI **/
+/** 3. NET & UI **/
 const net = {
     peer: null, conn: null, isHost: false,
     init() {
         this.peer = new Peer();
         this.peer.on('open', id => document.getElementById('my-id-display').innerText = id);
-        this.peer.on('connection', c => {
-            if(this.conn) return; this.conn = c; this.isHost = true; this.setup();
-        });
+        this.peer.on('connection', c => { if(!this.conn) { this.conn = c; this.isHost = true; this.setup(); } });
     },
     setup() {
         this.conn.on('open', () => ui.showWaiting(this.isHost));
@@ -375,9 +373,7 @@ const ui = {
     },
     copyID() {
         const id = document.getElementById('my-id-display').innerText;
-        navigator.clipboard.writeText(id).then(() => {
-            this.toast("ĐÃ SAO CHÉP!");
-        });
+        if(id && !id.includes("...")) navigator.clipboard.writeText(id).then(() => this.toast("ĐÃ SAO CHÉP!"));
     }
 };
 
