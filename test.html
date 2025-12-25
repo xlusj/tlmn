@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tiến Lên Miền Nam - Ultimate Stable</title>
+    <title>Tiến Lên Miền Nam</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Quicksand:wght@700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
 <body class="flex items-center justify-center h-screen w-screen text-white select-none">
 
 <div id="ui-lobby" class="fixed inset-0 lobby-screen flex flex-col items-center justify-center p-6 text-center">
-    <h1 class="text-6xl font-black text-yellow-500 italic mb-2" style="font-family: 'Montserrat'">TIẾN LÊN</h1>
+    <h1 class="text-6xl font-black text-yellow-500 italic mb-2" style="font-family: 'Montserrat'">TIẾN LÊN MIỀN NAM</h1>
     <div id="lobby-home" class="w-full max-w-sm space-y-4">
         <button onclick="actions.startSolo()" class="w-full py-4 bg-emerald-600 rounded-2xl font-bold text-xl uppercase">Chơi với Bot AI</button>
         <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
@@ -198,7 +198,6 @@ const game = {
         this.turn = (this.turn + 1) % 4;
         const activeCount = this.skipped.filter(s => !s).length;
 
-        // Nếu chỉ còn 1 người duy nhất chưa skip, người đó được đánh bài mới
         if (activeCount === 1) {
             const lastMan = this.skipped.findIndex(s => !s);
             if (this.turn === lastMan) {
@@ -206,7 +205,7 @@ const game = {
                 this.render(); this.checkTurn();
                 return;
             } else {
-                return setTimeout(() => this.next(), 50); // Chuyển nhanh qua người đã skip
+                return setTimeout(() => this.next(), 50);
             }
         }
 
@@ -216,7 +215,6 @@ const game = {
     },
     checkTurn() {
         if (net.isHost && this.turn !== this.myIdx) {
-            // Trong chế độ Online, Host điều khiển các BOT (trừ Client Player ở vị trí 1)
             const isClient = net.conn && this.turn === 1;
             if (!isClient) setTimeout(() => this.botPlay(), 1000);
         }
